@@ -1,7 +1,7 @@
 # file = File.read("./input.txt")
 
-sample = File.read!("./input.txt")[1] |> String.to_charlist |> String.split |> Enum.map(&String.to_integer/1)
-IO.puts sample
+sample = File.read!("./input.txt") |> String.split |> Enum.map(&String.to_integer/1)
+IO.inspect sample
 
 # IO.puts Enum.reduce(contents, fn x, acc -> acc + Integer.floor(String.to_integer(x) / 3) - 2 end) 
 
