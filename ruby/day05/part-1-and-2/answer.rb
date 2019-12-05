@@ -20,14 +20,6 @@ class IntcodeParser
     @input = input
     @jump = nil
   end
-   
-  def process_addition_multiply_code(*args)
-    if args.first == ADDITION
-      @intcode_list[args.last] = @intcode_list[args[1]] + @intcode_list[args[2]]
-    elsif args.first == MULTIPLY
-      @intcode_list[args.last] = @intcode_list[args[1]] * @intcode_list[args[2]]
-    end
-  end
 
   def handle_params(code, value)
     if code == 0
@@ -43,17 +35,14 @@ class IntcodeParser
     #params[1] == 0  -> @intcode[slice[1]]
     #params[1] == 1 -> slice[1]
     #params[2] == 0 -> @intcode[slice[2]]
-    params << 0 if params.length == 1
     @intcode_list[slice[2]] = handle_params(params[0], slice[0]) + handle_params(params[1], slice[1])
   end
 
   def process_multiply(params, slice)
-    params << 0 if params.length == 1
     @intcode_list[slice[2]] = handle_params(params[0], slice[0]) * handle_params(params[1], slice[1])
   end
 
   def process_insert(slice)
-
     @intcode_list[slice] = @input
   end
 
@@ -64,7 +53,6 @@ class IntcodeParser
   end
 
   def process_jump_true(params, slice)
-    params << 0 if params.length == 1
     if handle_params(params[0], slice[0]) != 0
       @jump = handle_params(params[1], slice[1])
       return 'jump'
@@ -72,8 +60,6 @@ class IntcodeParser
   end
 
   def process_jump_false(params, slice)
-    params << 0 if params.length == 1
-
     if handle_params(params[0], slice[0]) == 0
       @jump = handle_params(params[1], slice[1])
       return 'jump'
@@ -81,8 +67,6 @@ class IntcodeParser
   end
 
   def process_less_than(params, slice)
-    params << 0 if params.length == 1
-
     if handle_params(params[0], slice[0]) < handle_params(params[1], slice[1])
       @intcode_list[slice[2]] = 1
     else
@@ -91,8 +75,6 @@ class IntcodeParser
   end
 
   def process_equals(params, slice)
-    params << 0 if params.length == 1
-
     if handle_params(params[0], slice[0]) == handle_params(params[1], slice[1])
       @intcode_list[slice[2]] = 1
     else
@@ -115,61 +97,51 @@ class IntcodeParser
   end
 
   def parse_optcode(command)
-    if command.first == INSERT
+    stringify_value = leading_zeroes(command.first)
+    opt_code = stringify_value[-2..-1].to_i
+    params = stringify_value[0...-2].split("").reverse.map(&:to_i)
+
+    if opt_code == ADDITION
+      process_addition(params, command[1..-1])
+    elsif opt_code == MULTIPLY
+      process_multiply(params, command[1..-1])
+    elsif opt_code == OUTPUT
+      process_output(params, command[1..-1].first)
+    elsif opt_code == INSERT
       process_insert(command.last)
-    elsif command.first == OUTPUT
-      process_output([0],command.last)
-    else
-      if command.first > 9
-        stringify_value = command.first.to_s
-        opt_code = stringify_value[-2..-1].to_i
-        params = stringify_value[0...-2].split("").reverse.map(&:to_i)
-      else
-        params = [0,0]
-        opt_code = command.first
-      end
-      if opt_code == ADDITION
-        process_addition(params, command[1..-1])
-      elsif opt_code == MULTIPLY
-        process_multiply(params, command[1..-1])
-      elsif opt_code == OUTPUT
-        process_output(params, command[1..-1].first)
-      elsif opt_code == JUMP_TRUE
-        process_jump_true(params, command[1..-1])
-      elsif opt_code == JUMP_FALSE
-        process_jump_false(params, command[1..-1])
-      elsif opt_code == LESS_THAN
-        process_less_than(params, command[1..-1])
-      elsif opt_code == EQUALS
-        process_equals(params, command[1..-1])
-      elsif opt_code == STOP
-        puts 'STOP'
-        exit
-      end
+    elsif opt_code == JUMP_TRUE
+      process_jump_true(params, command[1..-1])
+    elsif opt_code == JUMP_FALSE
+      process_jump_false(params, command[1..-1])
+    elsif opt_code == LESS_THAN
+      process_less_than(params, command[1..-1])
+    elsif opt_code == EQUALS
+      process_equals(params, command[1..-1])
+    elsif opt_code == STOP
+      puts 'STOP'
+      exit
     end
   end
 
-  def additional_slice_size(value)
-    if value == INSERT || value == OUTPUT
-      1
-    elsif value == ADDITION || value == MULTIPLY || value == LESS_THAN || value == EQUALS
+  def additional_slice_size(value) 
+    stringify_value = leading_zeroes(value)
+    opt_code = stringify_value[-2..-1].to_i
+    # conditional tree
+    if opt_code == ADDITION || opt_code == MULTIPLY || opt_code == LESS_THAN || opt_code == EQUALS
       3
-    elsif value == JUMP_TRUE || value == JUMP_FALSE
+    elsif opt_code == INSERT || opt_code == OUTPUT
+      1
+    elsif opt_code == JUMP_TRUE || opt_code == JUMP_FALSE
       2
-    else
-      stringify_value = value.to_s
-      opt_code = stringify_value[-2..-1].to_i
-      # conditional tree
-      if opt_code == ADDITION || opt_code == MULTIPLY || opt_code == LESS_THAN || opt_code == EQUALS
-        3
-      elsif opt_code == INSERT || opt_code == OUTPUT
-        1
-      elsif opt_code == JUMP_TRUE || opt_code == JUMP_FALSE
-        2
-      elsif opt_code == STOP
-        0
-      end
+    elsif opt_code == STOP
+      0
     end
+  end
+
+  private
+
+  def leading_zeroes(value)
+    value.to_s.rjust(4, "0")
   end
 end
 
