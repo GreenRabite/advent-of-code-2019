@@ -48,7 +48,7 @@ class IntcodeParser
 
   def process_output(params=[0],slice)
     puts '----------------------------------------'
-    puts "DIAGNOSTIC CODE: #{handle_params(params[0], slice)}"
+    puts "DIAGNOSTIC CODE: #{handle_params(params[0], slice[0])}"
     puts '----------------------------------------'
   end
 
@@ -106,7 +106,7 @@ class IntcodeParser
     elsif opt_code == MULTIPLY
       process_multiply(params, command[1..-1])
     elsif opt_code == OUTPUT
-      process_output(params, command[1..-1].first)
+      process_output(params, command[1..-1])
     elsif opt_code == INSERT
       process_insert(command.last)
     elsif opt_code == JUMP_TRUE
