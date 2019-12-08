@@ -174,7 +174,7 @@ values = "3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,
 # a = IntcodeParser.new(intcode_list, 0).run_the_program
 codes = [5,6,7,8,9].permutation.to_a
 max_thruster = 0
-local_thruster = 0
+local_max_thruster = 0
 parse_once = false
 memory_address = {}
 
@@ -227,16 +227,16 @@ codes.each do |code|
     memory_address['new_c'] = c
     memory_address['new_d'] = d
     memory_address['new_e'] = e
-    local_thruster = memory_address['new_e'].output
+    local_max_thruster = memory_address['new_e'].output
     break if memory_address['new_e'].stop
     parse_once = true
   end
   
-  if local_thruster > max_thruster
-    max_thruster = local_thruster
+  if local_max_thruster > max_thruster
+    max_thruster = local_max_thruster
   end
   parse_once = false
-  local_thruster = 0
+  local_max_thruster = 0
 end
 
 puts max_thruster
