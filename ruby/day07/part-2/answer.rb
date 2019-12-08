@@ -239,5 +239,4 @@ codes.each do |code|
   local_thruster = 0
 end
 
-
 puts max_thruster
